@@ -26,7 +26,7 @@ fn to_sql_string_values(values: &[&str]) -> String {
 }
 
 fn throw_error(msg: &str, code: i32) {
-    println!("{}", msg);
+    eprintln!("{}", msg);
     std::process::exit(code);
 }
 
@@ -65,7 +65,6 @@ pub struct SqliteDatabase {
 impl Database for SqliteDatabase {
     fn open_or_create(name: String) -> Self {
         let connection = rusqlite::Connection::open(name.clone()).unwrap();
-        // let connection = rusqlite::Connection::open_in_memory().unwrap();
         Self { name, connection }
     }
 
@@ -154,6 +153,20 @@ impl KwissDatabase {
             }
         }
     }
+
+    pub fn get_entries(&self, set_name: &str) -> Option<Vec<WordPair>> {
+        match self {
+            Self::Sqlite(db) => Some(
+                db.fetch_strings_from_table(set_name, ["word", "definition"], "")?
+                    .iter()
+                    .map(|r| WordPair {
+                        word: r[0].to_string(),
+                        definition: r[1].to_string(),
+                    })
+                    .collect::<Vec<_>>(),
+            ),
+        }
+    }
 }
 
 fn main() {
@@ -166,6 +179,11 @@ fn main() {
         }
         ["create", set_name] => {
             create_set(set_name);
+        }
+        ["start", mode, set_name] => {
+            for e in KwissDatabase::get_instance().get_entries(set_name).unwrap() {
+                println!("{}", e.word);
+            }
         }
         ["-h"] | ["--help"] => throw_error(HELP_MENU, 0),
         _ => throw_error(HELP_MENU, 1),
