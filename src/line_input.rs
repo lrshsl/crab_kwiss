@@ -2,8 +2,6 @@ use std::ops::{Generator, GeneratorState};
 
 
 
-
-
 pub struct StringLineInput<'a> {
     source: &'a str,
 }

@@ -8,4 +8,5 @@ edition = "2021"
 channel = "nightly"
 
 [dependencies]
+eframe = "0.22.0"
 rusqlite = "0.29.0"
